@@ -1,0 +1,2 @@
+class IsFullException(Exception):
+    pass
