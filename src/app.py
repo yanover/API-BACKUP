@@ -2,6 +2,7 @@ import os
 from flask import Flask
 from logging.config import dictConfig
 from routes.database_endpoint import database_endpoint
+from routes.website_endpoint import website_endpoint
 
 
 # Global
@@ -37,6 +38,8 @@ def register(app):
     app.logger.info("Loading endpoint ..")
     # Database
     app.register_blueprint(database_endpoint, url_prefix=PREFIX)
+    # Website
+    app.register_blueprint(website_endpoint, url_prefix=PREFIX)
 
 
 # Run webserver

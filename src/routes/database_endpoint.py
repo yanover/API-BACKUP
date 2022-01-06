@@ -1,30 +1,36 @@
 import os
-from flask import Blueprint, request, abort, current_app
+from flask import Blueprint, current_app
 from models.mysql_handler import MYSQL
-from MySQLdb import _mysql
+from models.ssh_handler import SSH
+
 
 # Declare Blueprint
 database_endpoint = Blueprint("database_endpoint", __name__)
 
 # Route default path
-ENDPOINT = "/mysql"
+ENDPOINT = "/databases"
+
 
 @database_endpoint.route(ENDPOINT, methods=["GET"])
 def default():
     current_app.logger.debug("Retrieve existing databases")
-    pass
+    return str(os.path.expanduser("~"))
 
 
 @database_endpoint.route(f"{ENDPOINT}/backup", methods=["GET"])
 def backup():
-
+    # Log database backup routine start on nasticot domaine
+    # --> here
     # Load configurations
-    HOST = os.environ.get("MYSQL_HOST")
-    PORT = int(os.environ.get("MYSQL_PORT"))
-    USER = os.environ.get("MYSQL_USER")
-    PASS = os.environ.get("MYSQL_PASS")
+    HOST = os.environ.get("BESPIN_HOST")
+    USER = os.environ.get("BESPIN_USER")
+    PASS = os.environ.get("BESPIN_PASS")
+    # SSH connection to host
+    handler = SSH(HOST, USER, PASS)
+    handler.connect()
+    handler.send("pwd")
+    
+    
 
-    database = MYSQL(HOST, PORT, USER, PASS)
-    handler = database.connect()
-    print(handler.query("SHOW DATABASES;"))
+
     return ""
