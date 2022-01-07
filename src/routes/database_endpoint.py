@@ -1,7 +1,8 @@
 import os
-from flask import Blueprint, current_app
-from models.mysql_handler import MYSQL
+from datetime import datetime
+from flask import Blueprint, current_app, request
 from models.ssh_handler import SSH
+from models.log import Log
 
 
 # Declare Blueprint
@@ -17,20 +18,39 @@ def default():
     return str(os.path.expanduser("~"))
 
 
-@database_endpoint.route(f"{ENDPOINT}/backup", methods=["GET"])
+@database_endpoint.route(f"{ENDPOINT}/backup", methods=["POST"])
 def backup():
-    # Log database backup routine start on nasticot domaine
-    # --> here
-    # Load configurations
-    HOST = os.environ.get("BESPIN_HOST")
-    USER = os.environ.get("BESPIN_USER")
-    PASS = os.environ.get("BESPIN_PASS")
-    # SSH connection to host
-    handler = SSH(HOST, USER, PASS)
-    handler.connect()
-    handler.send("pwd")
-    
-    
 
+    # Retrieve post parameters
+    databases = request.get_json(force=True)['databases']
+    
+    # Load configurations
+    SSH_HOST = os.environ.get("BESPIN_HOST")
+    SSH_USER = os.environ.get("BESPIN_USER")
+    SSH_PASS = os.environ.get("BESPIN_PASS")
+    MYSQL_USER = os.environ.get("MYSQL_USER")
+    MYSQL_PASS = os.environ.get("MYSQL_PASS")
+    API_LOG = os.environ.get("API_LOG")
+    
+    try:
+        # Log database backup routine start on nasticot domaine
+        Log(API_LOG, 1, "backup routine", "backup databases", request.method, "backup").log()
+        # SSH connection
+        handler = SSH(SSH_HOST, SSH_USER, SSH_PASS)
+        handler.connect()
+        # Build dump cmd
+        now = datetime.now()
+        for db in databases:
+            current_app.logger.debug(f"Backup of database {db} started")
+            dt_string = now.strftime("%d%m%Y-%H:%M:%S")
+            filename = dt_string + f"_{db}_auto.sql.gz"
+            cmd = f"mysqldump -u {MYSQL_USER} -p{MYSQL_PASS} {db} | gzip -c > {filename};"
+            # Send command
+            handler.send(cmd)
+
+    except Exception as e:
+        print(e)
+    finally:
+        handler.close()
 
     return ""

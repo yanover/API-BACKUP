@@ -6,6 +6,8 @@ from paramiko import (
     SSHException,
 )
 
+class CommandException(Exception):
+    pass
 
 class SSH:
     def __init__(self, host, user, password):
@@ -20,13 +22,16 @@ class SSH:
             self.handler.connect(
                 hostname=self.host, username=self.user, password=self.password
             )
-            print("Authentication success")
-        except AuthenticationException:
+            print(f"Authentication to {self.host} successfull")
+        except AuthenticationException as authenticationException:
             print("Authentication failed, please verify your credentials: %s")
-        except SSHException as sshException:
-            print("Unable to establish SSH connection: %s" % sshException)
+            raise(authenticationException)
         except BadHostKeyException as badHostKeyException:
             print("Unable to verify server's host key: %s" % badHostKeyException)
+            raise(badHostKeyException)
+        except SSHException as sshException:
+            print("Unable to establish SSH connection: %s" % sshException)
+            raise(sshException)
 
     def send(self, cmd):
         try:
@@ -35,5 +40,14 @@ class SSH:
             for line in iter(stdout.readline, ""):
                 print(line, end="")
 
+            print(stderr.readlines())
+
         except SSHException as sshException:
             print("An error occured while sending command: %s" % sshException)
+            raise(sshException)
+        except Exception as e: 
+            raise(e)
+
+
+    def close(self):
+        self.handler.close()
