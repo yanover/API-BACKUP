@@ -6,6 +6,8 @@ from paramiko import (
     SSHException,
 )
 
+from flask import current_app
+
 class CommandException(Exception):
     pass
 
@@ -22,25 +24,31 @@ class SSH:
             self.handler.connect(
                 hostname=self.host, username=self.user, password=self.password
             )
-            print(f"Authentication to {self.host} successfull")
         except AuthenticationException as authenticationException:
-            print("Authentication failed, please verify your credentials: %s")
+            current_app.logger.debug("Authentication failed, please verify your credentials: %s")
             raise(authenticationException)
         except BadHostKeyException as badHostKeyException:
-            print("Unable to verify server's host key: %s" % badHostKeyException)
-            raise(badHostKeyException)
+            current_app.logger.debug("Unable to verify server's host key: %s" % badHostKeyException)
+            raise(badHostKeyException())
         except SSHException as sshException:
-            print("Unable to establish SSH connection: %s" % sshException)
+            current_app.logger.debug("Unable to establish SSH connection: %s" % sshException)
             raise(sshException)
 
     def send(self, cmd):
+        current_app.logger.debug(f"Sending command : {cmd}")
         try:
             stdin, stdout, stderr = self.handler.exec_command(cmd)
-            
-            for line in iter(stdout.readline, ""):
-                print(line, end="")
 
-            print(stderr.readlines())
+            # store the stderr
+            error = stderr.readlines()
+            # create an entry for stderr that is pretty to read
+            if(error):
+                err = ("".join(error)).strip()
+                raise CommandException(err)
+            
+            for line in stdout.readlines():
+                # For now, we don't need the result
+                pass
 
         except SSHException as sshException:
             print("An error occured while sending command: %s" % sshException)

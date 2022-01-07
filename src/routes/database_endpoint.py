@@ -40,16 +40,19 @@ def backup():
         handler.connect()
         # Build dump cmd
         now = datetime.now()
-        for db in databases:
+        for db in databases: 
             current_app.logger.debug(f"Backup of database {db} started")
-            dt_string = now.strftime("%d%m%Y-%H:%M:%S")
-            filename = dt_string + f"_{db}_auto.sql.gz"
+            filename = now.strftime("%d%m%Y-%H:%M:%S") + f"_{db}_auto.sql.gz"
             cmd = f"mysqldump -u {MYSQL_USER} -p{MYSQL_PASS} {db} | gzip -c > {filename};"
             # Send command
-            handler.send(cmd)
+            try:
+                handler.send(cmd)
+            except Exception as e:
+                current_app.logger.debug(e)
+                continue
 
     except Exception as e:
-        print(e)
+        current_app.logger.debug(f"An error occured while reaching endpoint {ENDPOINT}/backup : {e}")
     finally:
         handler.close()
 

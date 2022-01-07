@@ -1,6 +1,7 @@
 import requests
 import datetime
 import time
+from flask import current_app
 
 class Log():
     def __init__(self, api_log, result, action, message, method, tagName):
@@ -17,8 +18,8 @@ class Log():
         }
 
     def log(self):
+        current_app.logger.debug(f"Sending log to {self.api_log}")
         try:
-            print("Sending log request")
             r = requests.post(self.api_log, json=self.json_playload)
             r.raise_for_status()
         except requests.exceptions.RequestException as e: 
