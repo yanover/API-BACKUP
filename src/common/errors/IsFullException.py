@@ -1,2 +1,0 @@
-class IsFullException(Exception):
-    pass

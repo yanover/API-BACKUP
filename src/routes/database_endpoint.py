@@ -1,4 +1,4 @@
-import os
+import os, time
 from datetime import datetime
 from flask import Blueprint, current_app, request
 from models.ssh_handler import SSH
@@ -25,34 +25,36 @@ def backup():
     databases = request.get_json(force=True)['databases']
     
     # Load configurations
-    SSH_HOST = os.environ.get("BESPIN_HOST")
-    SSH_USER = os.environ.get("BESPIN_USER")
-    SSH_PASS = os.environ.get("BESPIN_PASS")
-    MYSQL_USER = os.environ.get("MYSQL_USER")
-    MYSQL_PASS = os.environ.get("MYSQL_PASS")
-    API_LOG = os.environ.get("API_LOG")
-    
+    config = current_app.config['APP_CONFIG']
+
     try:
+        # SSH handler
+        handler = SSH(config['SSH_HOST'], config['SSH_USER'], config['SSH_PASS'])
         # Log database backup routine start on nasticot domaine
-        Log(API_LOG, 1, "backup routine", "backup databases", request.method, "backup").log()
+        #Log(config['API_LOG'], 1, "backup routine", "backup databases", request.method, "backup").log()
         # SSH connection
-        handler = SSH(SSH_HOST, SSH_USER, SSH_PASS)
         handler.connect()
         # Build dump cmd
         now = datetime.now()
         for db in databases: 
             current_app.logger.debug(f"Backup of database {db} started")
-            filename = now.strftime("%d%m%Y-%H:%M:%S") + f"_{db}_auto.sql.gz"
-            cmd = f"mysqldump -u {MYSQL_USER} -p{MYSQL_PASS} {db} | gzip -c > {filename};"
-            # Send command
+            filename = now.strftime("%d%m%Y") + f"_{db}.sql.gz"
+            dump = f"mysqldump -u {config['MYSQL_USER']} -p{config['MYSQL_PASS']} {db} | gzip -c > {filename};"
+            copy = f"sshpass -p 'Yanover225712' scp /home/nasticot/{filename} yanover@192.168.0.10:/volume1/Partage/BackUp/Nasticot/database"
             try:
-                handler.send(cmd)
+                # Dumb dbs
+                handler.send(dump)
+                # Wait 
+                time.sleep(3)
+                # Move file to Synology
+                handler.send(copy)
             except Exception as e:
                 current_app.logger.debug(e)
                 continue
 
     except Exception as e:
         current_app.logger.debug(f"An error occured while reaching endpoint {ENDPOINT}/backup : {e}")
+        return e
     finally:
         handler.close()
 

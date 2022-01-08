@@ -13,6 +13,7 @@ class CommandException(Exception):
 
 class SSH:
     def __init__(self, host, user, password):
+        self.handler = None
         self.host = host
         self.user = user
         self.password = password
@@ -38,17 +39,18 @@ class SSH:
         current_app.logger.debug(f"Sending command : {cmd}")
         try:
             stdin, stdout, stderr = self.handler.exec_command(cmd)
-
             # store the stderr
             error = stderr.readlines()
             # create an entry for stderr that is pretty to read
             if(error):
                 err = ("".join(error)).strip()
                 raise CommandException(err)
-            
-            for line in stdout.readlines():
-                # For now, we don't need the result
-                pass
+
+            """ stdin, stdout, stderr = self.handler.exec_command(cmd, get_pty=True)
+
+            for line in iter(stdout.readline, ""):
+                print(line, end="") """
+
 
         except SSHException as sshException:
             print("An error occured while sending command: %s" % sshException)
@@ -58,4 +60,6 @@ class SSH:
 
 
     def close(self):
-        self.handler.close()
+        if self.handler.get_transport() is not None:
+            current_app.logger.debug("Closing SSH session ..")
+            self.handler.close()

@@ -2,6 +2,7 @@ import requests
 import datetime
 import time
 from flask import current_app
+from common.errors.LogError import LogError
 
 class Log():
     def __init__(self, api_log, result, action, message, method, tagName):
@@ -23,7 +24,7 @@ class Log():
             r = requests.post(self.api_log, json=self.json_playload)
             r.raise_for_status()
         except requests.exceptions.RequestException as e: 
-            raise(e)
+            raise LogError()
 
     def get_date(self):
         return datetime.datetime.fromtimestamp(time.time()).strftime('%Y-%m-%d %H:%M:%S')
