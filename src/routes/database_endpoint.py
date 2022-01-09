@@ -38,13 +38,13 @@ def backup():
         now = datetime.now()
         for db in databases: 
             current_app.logger.debug(f"Backup of database {db} started")
-            filename = now.strftime("%d%m%Y") + f"_{db}.sql.gz"
-            dump = f"mysqldump -u {config['MYSQL_USER']} -p{config['MYSQL_PASS']} {db} | gzip -c > {filename};"
-            copy = f"sshpass -p 'Yanover225712' scp /home/nasticot/{filename} yanover@192.168.0.10:/volume1/Partage/BackUp/Nasticot/database"
+            file = f"{config['SSH_SRC']}/{now.strftime('%d%m%Y')}_{db}.sql.gz"
+            dump = f"mysqldump -u {config['MYSQL_USER']} -p{config['MYSQL_PASS']} {db} | gzip -c > {file};"
+            copy = f"sshpass -p '{config['NAS_PASS']}' scp {file} ${config['NAS_USER']}@{config['NAS_HOST']}:{config['NAS_DEST']}/database"
             try:
                 # Dumb dbs
                 handler.send(dump)
-                # Wait 
+                # Wait 3 sec
                 time.sleep(3)
                 # Move file to Synology
                 handler.send(copy)

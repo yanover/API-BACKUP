@@ -2,9 +2,10 @@ from paramiko import (
     SSHClient,
     AutoAddPolicy,
     AuthenticationException,
-    BadHostKeyException,
     SSHException,
 )
+
+from common.errors.HttpExceptions import AuthException, SshException
 
 from flask import current_app
 
@@ -27,13 +28,10 @@ class SSH:
             )
         except AuthenticationException as authenticationException:
             current_app.logger.debug("Authentication failed, please verify your credentials: %s")
-            raise(authenticationException)
-        except BadHostKeyException as badHostKeyException:
-            current_app.logger.debug("Unable to verify server's host key: %s" % badHostKeyException)
-            raise(badHostKeyException())
+            raise AuthException()
         except SSHException as sshException:
             current_app.logger.debug("Unable to establish SSH connection: %s" % sshException)
-            raise(sshException)
+            raise SshException
 
     def send(self, cmd):
         current_app.logger.debug(f"Sending command : {cmd}")
@@ -46,11 +44,8 @@ class SSH:
                 err = ("".join(error)).strip()
                 raise CommandException(err)
 
-            """ stdin, stdout, stderr = self.handler.exec_command(cmd, get_pty=True)
-
-            for line in iter(stdout.readline, ""):
+            """ for line in iter(stdout.readline, ""):
                 print(line, end="") """
-
 
         except SSHException as sshException:
             print("An error occured while sending command: %s" % sshException)
@@ -60,6 +55,6 @@ class SSH:
 
 
     def close(self):
-        if self.handler.get_transport() is not None:
+        if self.handler is not None and self.handler.get_transport() is not None:
             current_app.logger.debug("Closing SSH session ..")
             self.handler.close()

@@ -2,7 +2,7 @@ import requests
 import datetime
 import time
 from flask import current_app
-from common.errors.LogError import LogError
+from common.errors.HttpExceptions import LogError
 
 class Log():
     def __init__(self, api_log, result, action, message, method, tagName):
