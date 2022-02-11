@@ -1,33 +1,37 @@
 import os
-
+from os.path import join, dirname
+from dotenv import load_dotenv
 from flask import Flask
-from werkzeug.exceptions import BadRequest, NotFound
 from logging.config import dictConfig
 from routes.database_endpoint import database_endpoint
-from routes.website_endpoint import website_endpoint
+from routes.container_endpoint import container_endpoint
 from common.errors.HttpExceptions import LogError, AuthException, SshException
 
 # Global
 PORT = os.environ.get("PORT")
 PREFIX = os.environ.get("PREFIX")
 APP = Flask(__name__)
+# Load .env file
+dotenv_path = join(dirname(__file__), '.env')
+load_dotenv(dotenv_path)
 
 # Default configuration
 def setup(APP):
     # Load default configuration into context
-    APP.config['APP_CONFIG'] = {
-        'SSH_HOST' : os.environ.get("BESPIN_HOST"),
-        'SSH_USER' : os.environ.get("BESPIN_USER"),
-        'SSH_PASS' : os.environ.get("BESPIN_PASS"),
-        'SSH_SRC' : os.environ.get("BESPIN_SRC"),
-        'MYSQL_USER' : os.environ.get("MYSQL_USER"),
-        'MYSQL_PASS' : os.environ.get("MYSQL_PASS"),
-        'NAS_HOST' : os.environ.get("NAS_HOST"),
-        'NAS_USER' : os.environ.get("NAS_USER"),
-        'NAS_PASS' : os.environ.get("NAS_PASS"),
-        'NAS_DEST' : os.environ.get("NAS_DEST"),
-        'API_LOG' : os.environ.get("API_LOG")
+    APP.config["APP_CONFIG"] = {
+        "SSH_HOST": os.environ.get("BESPIN_HOST"),
+        "SSH_USER": os.environ.get("BESPIN_USER"),
+        "SSH_PASS": os.environ.get("BESPIN_PASS"),
+        "SSH_SRC": os.environ.get("BESPIN_SRC"),
+        "MYSQL_USER": os.environ.get("MYSQL_USER"),
+        "MYSQL_PASS": os.environ.get("MYSQL_PASS"),
+        "NAS_HOST": os.environ.get("NAS_HOST"),
+        "NAS_USER": os.environ.get("NAS_USER"),
+        "NAS_PASS": os.environ.get("NAS_PASS"),
+        "NAS_DEST": os.environ.get("NAS_DEST"),
+        "API_LOG": os.environ.get("API_LOG"),
     }
+
     # Configure logging
     dictConfig(
         {
@@ -49,12 +53,15 @@ def setup(APP):
         }
     )
 
+
 def bad_request(e):
     return e, 400
+
 
 def unauthorized(e):
     print(e)
     return e, 401
+
 
 def not_found(e):
     return e, 404
@@ -73,8 +80,8 @@ def register_endpoints(app):
     app.logger.info("Registering endpoint ..")
     # Database
     app.register_blueprint(database_endpoint, url_prefix=PREFIX)
-    # Website
-    app.register_blueprint(website_endpoint, url_prefix=PREFIX)
+    # Containers
+    app.register_blueprint(container_endpoint, url_prefix=PREFIX)
 
 
 # Run webserver
