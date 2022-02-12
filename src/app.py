@@ -2,6 +2,7 @@ import os
 from os.path import join, dirname
 from dotenv import load_dotenv
 from flask import Flask
+from flask_cors import CORS
 from logging.config import dictConfig
 from routes.database_endpoint import database_endpoint
 from routes.container_endpoint import container_endpoint
@@ -11,6 +12,13 @@ from common.errors.HttpExceptions import LogError, AuthException, SshException
 PORT = os.environ.get("PORT")
 PREFIX = os.environ.get("PREFIX")
 APP = Flask(__name__)
+# Enable cors
+CORS(APP)
+cors = CORS(APP, resource={
+    r"/*":{
+        "origins":"*"
+    }
+})
 # Load .env file
 dotenv_path = join(dirname(__file__), '.env')
 load_dotenv(dotenv_path)

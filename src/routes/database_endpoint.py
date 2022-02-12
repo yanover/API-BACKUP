@@ -18,8 +18,8 @@ def default():
     try :
         # SSH handler
         handler = SSH(config['NAS_HOST'], config['NAS_USER'], config['NAS_PASS'])
-        # Log database backup routine start on nasticot domaine
-        #Log(config['API_LOG'], 1, "backup routine", "List database backups", request.method, "backup").log()
+        # Log database listingpxy  routine start on nasticot domaine
+        Log(config['API_LOG'], 1, "backup routine", "List database backups", request.method, "backup").log()
         # SSH connection
         handler.connect()
         current_app.logger.debug("Retrieve existing databases backups")
