@@ -26,6 +26,7 @@ class SSH:
             self.handler.connect(
                 hostname=self.host, username=self.user, password=self.password
             )
+            current_app.logger.debug(f"Connection to {self.host} successfull")
         except AuthenticationException as authenticationException:
             current_app.logger.debug("Authentication failed, please verify your credentials: %s")
             raise AuthException()
@@ -37,20 +38,20 @@ class SSH:
         current_app.logger.debug(f"Sending command : {cmd}")
         try:
             stdin, stdout, stderr = self.handler.exec_command(cmd)
-            # store the stderr
-            error = stderr.readlines()
             # create an entry for stderr that is pretty to read
+            error = stderr.readlines()
             if(error):
                 err = ("".join(error)).strip()
-                raise CommandException(err)
-
-            """ for line in iter(stdout.readline, ""):
-                print(line, end="") """
+                if "Could not chdir to home directory" not in err:
+                    raise CommandException(err)
+            # Retturn raw result
+            return stdout
 
         except SSHException as sshException:
             print("An error occured while sending command: %s" % sshException)
             raise(sshException)
         except Exception as e: 
+            print("test")
             raise(e)
 
 
