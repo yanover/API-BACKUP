@@ -19,10 +19,10 @@ load_dotenv(dotenv_path)
 def setup(APP):
     # Load default configuration into context
     APP.config["APP_CONFIG"] = {
-        "SSH_HOST": os.environ.get("BESPIN_HOST"),
-        "SSH_USER": os.environ.get("BESPIN_USER"),
-        "SSH_PASS": os.environ.get("BESPIN_PASS"),
-        "SSH_SRC": os.environ.get("BESPIN_SRC"),
+        "BESPIN_HOST": os.environ.get("BESPIN_HOST"),
+        "BESPIN_USER": os.environ.get("BESPIN_USER"),
+        "BESPIN_PASS": os.environ.get("BESPIN_PASS"),
+        "BESPIN_SRC": os.environ.get("BESPIN_SRC"),
         "MYSQL_USER": os.environ.get("MYSQL_USER"),
         "MYSQL_PASS": os.environ.get("MYSQL_PASS"),
         "NAS_HOST": os.environ.get("NAS_HOST"),
