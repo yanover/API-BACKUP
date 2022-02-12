@@ -17,6 +17,7 @@ TODO
 
 | Route | Method | Params | Description |
 | ----------- | ----------- | ----------- | ----------- |
+| api/databases/backup | GET | - | List existing database backups
 | api/databases/backup | POST | array of databases | Save specified array of database names
 
 ### Database backup
