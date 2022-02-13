@@ -23,6 +23,11 @@ cors = CORS(APP, resource={
 dotenv_path = join(dirname(__file__), '.env')
 load_dotenv(dotenv_path)
 
+# Default route
+@APP.route('/')
+def hello_world():
+    return 'Hey, we have Flask in a Docker container!'
+
 # Default configuration
 def setup(APP):
     # Load default configuration into context
@@ -95,7 +100,7 @@ def register_endpoints(app):
 # Run webserver
 def run(app):
     app.logger.info("Launching webserver ..")
-    app.run(debug=True, port=PORT)
+    app.run(debug=True, port=PORT, host="0.0.0.0")
 
 
 if __name__ == "__main__":

@@ -38,20 +38,23 @@ class SSH:
         current_app.logger.debug(f"Sending command : {cmd}")
         try:
             stdin, stdout, stderr = self.handler.exec_command(cmd)
+            
             # create an entry for stderr that is pretty to read
             error = stderr.readlines()
+            
             if(error):
                 err = ("".join(error)).strip()
                 if "Could not chdir to home directory" not in err:
                     raise CommandException(err)
-            # Retturn raw result
+
+            # Return raw result
             return stdout
 
         except SSHException as sshException:
-            print("An error occured while sending command: %s" % sshException)
+            current_app.logger.error("An error occured while sending command: %s" % sshException)
             raise(sshException)
         except Exception as e: 
-            print("test")
+            current_app.logger.error("An unknown error occured while sending command: %s" % e)
             raise(e)
 
 
