@@ -1,6 +1,6 @@
 # syntax=docker/dockerfile:1
 # Install Python image
-FROM python:3.8-slim-buster
+FROM python:3.11.0a5-bullseye
 # Create a directory inside the container
 WORKDIR /app
 # Copy package dependecies declarations
@@ -11,6 +11,9 @@ RUN pip3 install -r requirements.txt
 COPY src .
 # Set FLASK APP
 ENV FLASK_APP=app.py
+ENV FLASK_RUN_HOST=127.0.0.1
+# Expose container port
+EXPOSE 3000
 # Tell docker commands to run on start
 CMD [ "python3", "app.py"] 
  
