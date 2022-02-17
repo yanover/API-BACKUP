@@ -56,7 +56,7 @@ def backup():
 
     try:
         # SSH handler
-        handler = SSH(config['BESPIN_HOST'], config['BESPIN_USER'], config['BESPIN_PASS'])
+        handler = SSH(config['BESPIN_HOST'], config['PI_USER'], config['PI_PASS'])
         # Log database backup routine start on nasticot domaine
         Log(config['API_LOG'], 1, "backup routine", "backup databases", request.method, "backup").log()
         # SSH connection
@@ -65,7 +65,7 @@ def backup():
         now = datetime.now()
         for db in databases: 
             current_app.logger.debug(f"Backup of database {db} started")
-            file = f"{config['BESPIN_SRC']}/{now.strftime('%d%m%Y')}_{db}.sql.gz"
+            file = f"{config['PI_SRC']}/{now.strftime('%d%m%Y')}_{db}.sql.gz"
             dump = f"mysqldump -u {config['MYSQL_USER']} -p{config['MYSQL_PASS']} {db} | gzip -c > {file};"
             copy = f"sshpass -p '{config['NAS_PASS']}' scp {file} ${config['NAS_USER']}@{config['NAS_HOST']}:{config['NAS_DEST']}/database"
             try:
