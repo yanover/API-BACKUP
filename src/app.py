@@ -33,17 +33,19 @@ def setup(APP):
     # Load default configuration into context
     APP.config["APP_CONFIG"] = {
         "BESPIN_HOST": os.environ.get("BESPIN_HOST"),
-        "BESPIN_USER": os.environ.get("BESPIN_USER"),
-        "BESPIN_PASS": os.environ.get("BESPIN_PASS"),
-        "BESPIN_SRC": os.environ.get("BESPIN_SRC"),
+        "PI_USER": os.environ.get("PI_USER"),
+        "PI_PASS": os.environ.get("PI_PASS"),
+        "PI_SRC": os.environ.get("PI_SRC"),
         "MYSQL_USER": os.environ.get("MYSQL_USER"),
         "MYSQL_PASS": os.environ.get("MYSQL_PASS"),
         "NAS_HOST": os.environ.get("NAS_HOST"),
         "NAS_USER": os.environ.get("NAS_USER"),
         "NAS_PASS": os.environ.get("NAS_PASS"),
         "NAS_DEST": os.environ.get("NAS_DEST"),
-        "API_LOG": os.environ.get("API_LOG"),
+        "API_LOG": os.environ.get("API_LOG")
     }
+
+    print(APP.config)
 
     # Configure logging
     dictConfig(
