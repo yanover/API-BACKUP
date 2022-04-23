@@ -23,26 +23,27 @@ class Constants:
 
     def init_cmds(self):
 
-        def transform(cmd, patterns, values, idx = 0):
-            if len(patterns) <= idx or idx > len(patterns): return cmd
+        config = self.APP_CONFIG
+
+        def transform(cmd, patterns, values):
+            if not patterns: return cmd
             return transform(
-                cmd.replace(f"%{patterns[idx]}%", values[idx]),
-                patterns, values, idx +  1
-            )
+                cmd.replace(f"%{patterns.pop(0)}%", values.pop(0)), patterns, values
+            ) 
 
         self.APP_CMDS = {
             "TRANSFORMER": transform,
             "DB": {
-                "MOVE": f"cd {self.APP_CONFIG['NAS_DEST']}/database;ls -alh --fu | grep '^-'",
-                "FILENAME": f"{self.APP_CONFIG['PI_SRC']}/%time%_%db%.sql.gz",
-                "DUMP": f"mysqldump -u {self.APP_CONFIG['MYSQL_USER']} -p{self.APP_CONFIG['MYSQL_PASS']} %db% | gzip -c > %filename%;",
-                "COPY": f"sshpass -p '{self.APP_CONFIG['NAS_PASS']}' scp %filename% ${self.APP_CONFIG['NAS_USER']}@{self.APP_CONFIG['NAS_HOST']}:{self.APP_CONFIG['NAS_DEST']}/database"
+                "MOVE": f"cd {config['NAS_DEST']}/database;ls -alh --fu | grep '^-'",
+                "FILENAME": f"{config['PI_SRC']}/%time%_%db%.sql.gz",
+                "DUMP": f"mysqldump -u {config['MYSQL_USER']} -p{config['MYSQL_PASS']} %db% | gzip -c > %filename%;",
+                "COPY": f"sshpass -p '{config['NAS_PASS']}' scp %filename% ${config['NAS_USER']}@{config['NAS_HOST']}:{config['NAS_DEST']}/database"
            },
            "CONTAINER": {
                "GET": "/snap/bin/lxc ls -c n --format csv",
-               "MOVE": f"cd {self.APP_CONFIG['NAS_DEST']}/containers;ls -alh --fu | grep '^-'",
-               "FILENAME": f"{self.APP_CONFIG['PI_SRC']}/%time%_%container%.tar.xz",
+               "MOVE": f"cd {config['NAS_DEST']}/containers;ls -alh --fu | grep '^-'",
+               "FILENAME": f"{config['PI_SRC']}/%time%_%container%.tar.xz",
                "DUMP":  f"/snap/bin/lxc export %container% %filename% --optimized-storage",
-               "COPY": f"sshpass -p '{self.APP_CONFIG['NAS_PASS']}' scp %filename%  {self.APP_CONFIG['NAS_USER']}@{self.APP_CONFIG['NAS_HOST']}:{self.APP_CONFIG['NAS_DEST']}/database"
+               "COPY": f"sshpass -p '{config['NAS_PASS']}' scp %filename%  {config['NAS_USER']}@{config['NAS_HOST']}:{config['NAS_DEST']}/database"
            }
         }
