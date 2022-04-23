@@ -7,6 +7,7 @@ from logging.config import dictConfig
 from routes.database_endpoint import database_endpoint
 from routes.container_endpoint import container_endpoint
 from common.errors.HttpExceptions import LogError, AuthException, SshException
+from common.utils.constants import Constants
 
 # Global
 PORT = os.environ.get("PORT")
@@ -31,21 +32,9 @@ def hello_world():
 # Default configuration
 def setup(APP):
     # Load default configuration into context
-    APP.config["APP_CONFIG"] = {
-        "BESPIN_HOST": os.environ.get("BESPIN_HOST"),
-        "PI_USER": os.environ.get("PI_USER"),
-        "PI_PASS": os.environ.get("PI_PASS"),
-        "PI_SRC": os.environ.get("PI_SRC"),
-        "MYSQL_USER": os.environ.get("MYSQL_USER"),
-        "MYSQL_PASS": os.environ.get("MYSQL_PASS"),
-        "NAS_HOST": os.environ.get("NAS_HOST"),
-        "NAS_USER": os.environ.get("NAS_USER"),
-        "NAS_PASS": os.environ.get("NAS_PASS"),
-        "NAS_DEST": os.environ.get("NAS_DEST"),
-        "API_LOG": os.environ.get("API_LOG")
-    }
-
-    print(APP.config)
+    constants = Constants()
+    APP.config["APP_CONFIG"] = constants.APP_CONFIG
+    APP.config["APP_CMDS"] = constants.APP_CMDS
 
     # Configure logging
     dictConfig(

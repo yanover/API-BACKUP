@@ -1,5 +1,4 @@
 import datetime
-import time
 
 class File():
     def __init__(self, name, size, date):
@@ -14,7 +13,7 @@ class File():
         t = time.split(":")
         t[2] = t[2].split(".")[0]
         t = [int(x) for x in t]
-        return datetime.datetime(d[0], d[2], d[1], t[0], t[1], t[2])
+        return datetime.datetime(d[0], d[1], d[2], t[0], t[1], t[2])
 
     def serialize(self):
         return {
