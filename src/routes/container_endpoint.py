@@ -2,7 +2,7 @@ from flask import Blueprint, current_app, request, jsonify
 from models.ssh_handler import SSH
 from models.log import Log
 from models.file import File
-from datetime import datetime
+from datetime import datetime  
 
 # Declare Blueprint
 container_endpoint = Blueprint("container_endpoint", __name__)
@@ -14,18 +14,19 @@ ENDPOINT = "/containers"
 def default():
     # Load configurations
     config = current_app.config['APP_CONFIG']
+    cmds = current_app.config['APP_CMDS']
 
     try :
         # SSH handler
         handler = SSH(config['NAS_HOST'], config['NAS_USER'], config['NAS_PASS'])
-        # Log database listingpxy  routine start on nasticot domaine
+        # Log database listingpxy  routine start on nasticot domain
         Log(config['API_LOG'], 1, "backup routine", "List containers backups", request.method, "backup").log()
         # SSH connection
         handler.connect()
         current_app.logger.debug("Retrieve existing containers backups")
         try:
             # Move to the right folder and display content
-            output = handler.send(f"cd {config['NAS_DEST']}/containers;ls -alh --fu | grep '^-'")
+            output = handler.send(cmds["CONTAINER"]["MOVE"])
             # List for storing result
             result = []
             for line in iter(output.readline, ""):
@@ -47,23 +48,19 @@ def default():
 
 @container_endpoint.route(f"{ENDPOINT}/backup", methods=["POST"])
 def backup():
-
     # Retrieve post parameters
     hosts = request.get_json(force=True)['hosts']
-    
     # Load configurations
     config = current_app.config['APP_CONFIG']
-
-    # Build command to save containers
+    cmds = current_app.config['APP_CMDS']
 
     try:
         for host in hosts:
-
             # SSH handler
             handler = SSH(host, config['PI_USER'], config['PI_PASS'])
             
             # Log database backup routine start on nasticot domaine
-            Log(config['API_LOG'], 1, "backup routine", "backup databases", request.method, "backup").log()
+            # Log(config['API_LOG'], 1, "backup routine", "backup databases", request.method, "backup").log()
             
             # SSH connection
             handler.connect()
@@ -71,7 +68,7 @@ def backup():
             now = datetime.now()           
             # Get containers on current host
             containers = []
-            output = handler.send("/snap/bin/lxc ls -c n --format csv")
+            output = handler.send(cmds["CONTAINER"]["GET"])
 
             for line in iter(output.readline, ""):
                 # Remove \n and split string
@@ -80,9 +77,10 @@ def backup():
             for container in containers:
                 # Save containers
                 current_app.logger.debug(f"Backup of container {container} started")
-                file = f"{config['PI_SRC']}/{now.strftime('%d%m%Y')}_{container}.tar.xz"
-                dump = f"""/snap/bin/lxc export {container} {file} --optimized-storage"""  
-                copy = f"sshpass -p '{config['NAS_PASS']}' scp {file} ${config['NAS_USER']}@{config['NAS_HOST']}:{config['NAS_DEST']}/database"
+                file = cmds["TRANSFORMER"](cmds["CONTAINER"]["FILENAME"], ["time", "container"], [now.strftime('%d%m%Y'), container])
+                print(file)
+                dump = cmds["TRANSFORMER"](cmds["CONTAINER"]["DUMP"], ["container", "filename"], [container, file])
+                copy = cmds["TRANSFORMER"](cmds["CONTAINER"]["COPY"], ["filename"], [file])
                 try :
                     print(f"saving container : {container}")
                     print(f"Sending command {dump}")
